@@ -48,7 +48,9 @@ public class Producer {
         /*
          * Launch the instance.
          */
+        producer.setNamesrvAddr("127.0.0.1:9876");
         producer.start();
+
 
         for (int i = 0; i < 1000; i++) {
             try {
@@ -81,7 +83,7 @@ public class Producer {
                  */
 
                 /*
-                 * if you want to get the send result in a asynchronize way, you can use this send method
+                 * if you waFnt to get the send result in a asynchronize way, you can use this send method
                  * {@code
                  *
                  *  producer.send(msg, new SendCallback() {
