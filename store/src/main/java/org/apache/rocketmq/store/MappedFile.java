@@ -43,27 +43,41 @@ import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
 
 public class MappedFile extends ReferenceResource {
+    // 操作系统每页大小，默认 4k
     public static final int OS_PAGE_SIZE = 1024 * 4;
     protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
+    // 当 前 JVM 实 例中 Mapped­File 虚拟内存
     private static final AtomicLong TOTAL_MAPPED_VIRTUAL_MEMORY = new AtomicLong(0);
-
+    // 当前 JVM 实例中 MappedFile 对象个数
     private static final AtomicInteger TOTAL_MAPPED_FILES = new AtomicInteger(0);
+    // 当前该文件的写指针，从 0开始(内存映射文件中的写指针)。
     protected final AtomicInteger wrotePosition = new AtomicInteger(0);
+    // 当前文件的提交指针，如果开启 transientStore­PoolEnable， 则数据会存储在 TransientStorePool 中， 然后提交到内存映射 ByteBuffer 中， 再 刷写到磁盘
     protected final AtomicInteger committedPosition = new AtomicInteger(0);
+    // 刷写到磁盘指针，该指针之前的数据持久化到磁盘中
     private final AtomicInteger flushedPosition = new AtomicInteger(0);
+    // 文件大小
     protected int fileSize;
+    // 文件通道
     protected FileChannel fileChannel;
     /**
      * Message will put to here first, and then reput to FileChannel if writeBuffer is not null.
      */
+    // 堆内存 ByteBuffer， 如果 不为空，数 据 首 先将存储在 该Buffer中， 然后提交到MappedFile对应的内存映射文件Buffer。 transientStorePoolEnable 为 true时不为空
     protected ByteBuffer writeBuffer = null;
+    // transientStor巳PoolEnable 为 true 时启用
     protected TransientStorePool transientStorePool = null;
     private String fileName;
+    // 该文件的初始偏移量
     private long fileFromOffset;
+    // 物理文件
     private File file;
+    // 物理文件对应的内存映射 Buffer
     private MappedByteBuffer mappedByteBuffer;
+    // 文件最后一次 内容写入时间
     private volatile long storeTimestamp = 0;
+    // 是否是 MappedFileQueue 队列中第一个文件 
     private boolean firstCreateInQueue = false;
 
     public MappedFile() {
